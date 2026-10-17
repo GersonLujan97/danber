@@ -6,7 +6,7 @@ Documentación principal: [Backend inicial en Notion](https://app.notion.com/p/3
 
 ## Iniciar en tu equipo
 
-Mantén CockroachDB 26.2.7 iniciado como ya lo tienes: SQL localhost:26257 y consola localhost:8081. La API usa localhost:8090, así no ocupa el puerto de tu consola.
+Puedes mantener CockroachDB 26.2.0 (tu instalación actual) o 26.2.7: SQL localhost:26257 y consola localhost:8081. La API usa localhost:8090, así no ocupa el puerto de tu consola.
 
 Primero, con el administrador de tu nodo LOCAL, entra en SQL:
 
@@ -54,7 +54,7 @@ Invoke-RestMethod http://127.0.0.1:8090/health/ready
 | GET /health/live | Proceso HTTP responde: status ok | No consulta la base |
 | GET /health/ready | Conexión SQL operativa: status ready | 503, status unavailable, sin detalle interno |
 
-Al arrancar comprueba conexión, versión CockroachDB 26.2.7 y que el usuario SQL no sea administrador. Si falla, termina con código 1 y mensaje genérico. Mientras corre, una pérdida de conexión hace fallar ready sin volver unhealthy al proceso solo por esa dependencia. ready verifica conectividad, no demuestra migraciones completas, autorización de negocio ni disponibilidad de toda una aplicación.
+Al arrancar comprueba conexión, versión CockroachDB 26.2.0 o 26.2.7 y que el usuario SQL no sea administrador. Si falla, termina con código 1 y mensaje genérico. Mientras corre, una pérdida de conexión hace fallar ready sin volver unhealthy al proceso solo por esa dependencia. ready verifica conectividad, no demuestra migraciones completas, autorización de negocio ni disponibilidad de toda una aplicación.
 
 Ctrl+C cierra HTTP antes del pool, permitiendo finalizar solicitudes en curso durante hasta cinco segundos. También se atiende SIGTERM en plataformas compatibles. No migrar automáticamente al arrancar ni usar una cuenta administradora en la API.
 
@@ -127,6 +127,7 @@ Rama feat/backend-inicial → comprobaciones → PR hacia main → revisión →
 Próxima capacidad: aprovisionamiento controlado de cuenta Maestro y sesiones. Mantenerla como entrega separada. Sin rutas de negocio, credenciales por defecto, ORM, entidades compartidas ni algoritmos de reserva adelantados.
 
 Fuentes: [net/http](https://pkg.go.dev/net/http), [pgxpool](https://pkg.go.dev/github.com/jackc/pgx/v5/pgxpool). Tener protocolo PostgreSQL no sustituye probar CockroachDB.
+
 
 
 

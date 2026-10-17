@@ -35,8 +35,8 @@ func Open(ctx context.Context, connectionURL string) (*Pool, error) {
 	if err := p.QueryRow(ctx, "SELECT version()").Scan(&version); err != nil {
 		return fail("no se pudo comprobar la versión del motor")
 	}
-	if !strings.Contains(version, "CockroachDB") || !strings.Contains(version, " v26.2.7 ") {
-		return fail("se requiere CockroachDB 26.2.7, versión verificada de esta entrega")
+	if !supportedVersion(version) {
+		return fail("se requiere CockroachDB 26.2.0 o 26.2.7, versiones verificadas de esta entrega")
 	}
 	// Reject privileged SQL identities even when their name is not root.
 	var admin bool
@@ -51,3 +51,16 @@ func Open(ctx context.Context, connectionURL string) (*Pool, error) {
 
 func (p *Pool) Check(ctx context.Context) error { return p.pool.Ping(ctx) }
 func (p *Pool) Close()                          { p.pool.Close() }
+
+func supportedVersion(version string) bool {
+	fields := strings.Fields(version)
+	if len(fields) < 2 || fields[0] != "CockroachDB" {
+		return false
+	}
+	for _, field := range fields[1:] {
+		if field == "v26.2.0" || field == "v26.2.7" {
+			return true
+		}
+	}
+	return false
+}

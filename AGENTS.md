@@ -1,5 +1,10 @@
 # Instrucciones de trabajo — Danber
 
+**CHG-012 · 2026-10-17:** backend y migrador admiten explícitamente CockroachDB 26.2.0 (instalación del usuario) y 26.2.7. Integración real del backend verificada en 26.2.0; pruebas SQL en informe actualizado. No se cambia el servidor ni los datos del usuario y las ocho migraciones conservan su contenido. Revisión de impacto pendiente; reiniciar API para cargar el ajuste.
+
+[Detalle de compatibilidad](docs/decisiones/0012-compatibilidad-cockroach-26-2-0.md).
+
+
 **CHG-011 · 2026-10-17:** flujo de ramas adoptado e incremento feat/backend-inicial implementado: servidor Go, configuración, pool pgx, health/live y health/ready, cierre ordenado, contrato HTTP y CI. Integración local con CockroachDB real; nueva migración 008 restringe CREATE en public. Revisión de impacto pendiente. Cuenta Maestro, sesiones y capacidades de negocio aún no implementadas.
 
 [Ejecutar el backend inicial](backend/README.md). Los estados anteriores se conservan como antecedentes.
@@ -86,6 +91,7 @@ Para cambios documentales, revisar enlaces relativos, coherencia del glosario, d
 **Confirmado · CHG-003 · 2026-10-16:** citas de 30 minutos por defecto con duración ajustable; un odontólogo actual y soporte para varios; sin solapamientos por odontólogo; DNI propio obligatorio para todos los pacientes; nombre del padre o apoderado para menores y pacientes de 66 años o más. A los 65 no aplica ese requisito por edad. **Pendiente de revisión:** límites y permisos del ajuste de duración, horarios, evaluación de edad y detalle del vínculo con el apoderado. El dato del apoderado no concede por sí solo permisos de firma o acceso.
 
 Ver docs/decisiones/0003-citas-e-identificacion.md. No volver a tratar estas reglas como pendientes de confirmación.
+
 
 
 

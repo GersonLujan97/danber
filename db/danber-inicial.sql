@@ -1,4 +1,4 @@
--- Danber: instalacion inicial en base NUEVA, CockroachDB v26.2.7.
+-- Danber: instalacion inicial en base NUEVA, CockroachDB v26.2.0 o v26.2.7.
 
 -- Ejecutar con errexit; DDL no es una transaccion global.
 

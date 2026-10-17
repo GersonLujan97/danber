@@ -1,7 +1,7 @@
 {
-  "server": "CockroachDB CCL v26.2.7 (x86_64-w64-mingw32, built 2026/09/21 19:51:33, go1.25.13)",
-  "database": "danber_test_135dce4e7b2b",
-  "standalone_database": "danber_test_645394589dc9",
+  "server": "CockroachDB CCL v26.2.0 (x86_64-w64-mingw32, built 2026/04/21 18:34:48, go1.25.5)",
+  "database": "danber_test_341b0f9c19e8",
+  "standalone_database": "danber_test_83d5e88a8597",
   "checks": [
     "Actualización desde versión 3",
     "Migraciones y reejecución sin cambios",
@@ -45,5 +45,5 @@
   "total": 38,
   "serialization_retries": 0,
   "scope": "DDL, integridad y protocolo SQL de referencia; no API ni autorización por recurso",
-  "completed_utc": "2026-10-17T21:02:10Z"
+  "completed_utc": "2026-10-17T22:27:53Z"
 }
