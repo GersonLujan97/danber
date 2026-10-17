@@ -1,5 +1,10 @@
 # Estrategia preliminar de pruebas e independencia
 
+**CHG-011 · 2026-10-17:** flujo de ramas adoptado e incremento feat/backend-inicial implementado: servidor Go, configuración, pool pgx, health/live y health/ready, cierre ordenado, contrato HTTP y CI. Integración local con CockroachDB real; nueva migración 008 restringe CREATE en public. Revisión de impacto pendiente. Cuenta Maestro, sesiones y capacidades de negocio aún no implementadas.
+
+[Ejecutar el backend inicial](../../backend/README.md). Los estados anteriores se conservan como antecedentes.
+
+
 **CHG-008 · 2026-10-17:** migraciones iniciales de CockroachDB 26.2.7 generadas y verificadas: siete versiones, 28 tablas más control de migración, SQL único y scripts de ejecución local. **37 comprobaciones correctas** en nodo aislado con datos ficticios. Autorización/API aún pendientes; las reglas de negocio no confirmadas conservan ese estado. Revisión de impacto pendiente.
 
 [Guía para crear la base local](../../db/README.md). Los antecedentes siguientes conservan su estado histórico.
@@ -94,5 +99,6 @@ Por cambio: formato, compilación, análisis estático, tipos de TypeScript, pru
 Comandos de referencia para cuando exista código: `go test ./...`, `go vet ./...` y pruebas frontend mediante scripts versionados. Las pruebas de carrera de Go se ejecutarán en un entorno compatible; detectan carreras de memoria, no sustituyen la prueba de concurrencia SQL. Mantener un reporte de versión de motor, migraciones aplicadas y pruebas ejecutadas.
 
 Las pruebas se incorporan junto al caso de uso, no al terminar toda la aplicación. Evitar pruebas que solo confirman nombres de carpetas o repiten la implementación. Para este cambio documental se revisan enlaces, consistencia y diagramas, sin inventar resultados de pruebas funcionales.
+
 
 

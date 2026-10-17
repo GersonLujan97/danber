@@ -1,5 +1,15 @@
 # Danber — sistema de gestión odontológica
 
+**Backend en Notion:** [Estructura, ejecución y pruebas](https://app.notion.com/p/3fc2756ebb4481068fb4eba26fb1228b).
+
+**CHG-011 · 2026-10-17:** flujo de ramas adoptado e incremento feat/backend-inicial implementado: servidor Go, configuración, pool pgx, health/live y health/ready, cierre ordenado, contrato HTTP y CI. Integración local con CockroachDB real; nueva migración 008 restringe CREATE en public. Revisión de impacto pendiente. Cuenta Maestro, sesiones y capacidades de negocio aún no implementadas.
+
+[Ejecutar el backend inicial](backend/README.md). Los estados anteriores se conservan como antecedentes.
+
+
+**CHG-010 · Adoptado en CHG-011:** [Flujo de ramas para trabajar individualmente](docs/decisiones/0010-flujo-de-ramas.md). main estable, ramas cortas por cambio y PR con comprobaciones. Flujo adoptado; protecciones no configuradas. CI del backend incorporada en CHG-011.
+
+
 **Guía de ejecución en Notion:** [Crear la base local](https://app.notion.com/p/3fc2756ebb44819a8a6df741dc1f3e50).
 
 **CHG-008 · 2026-10-17:** migraciones iniciales de CockroachDB 26.2.7 generadas y verificadas: siete versiones, 28 tablas más control de migración, SQL único y scripts de ejecución local. **37 comprobaciones correctas** en nodo aislado con datos ficticios. Autorización/API aún pendientes; las reglas de negocio no confirmadas conservan ese estado. Revisión de impacto pendiente.
@@ -93,6 +103,9 @@ Las fases A, B y C están desarrolladas como propuesta. D, E, F y G se anticipan
 Cada decisión debe marcarse como **Confirmado**, **Propuesto** o **Pendiente de validación**, con origen y fecha cuando cambie. Los términos del glosario deben coincidir en documentación, contratos y futuro código. Las fuentes normativas y técnicas se enlazan junto a las afirmaciones que respaldan; su consulta no constituye certificación legal ni prueba de ejecución.
 
 La carpeta no era un repositorio Git al iniciar esta entrega. Los archivos están preparados para versionarse cuando se inicialice el proyecto; esta entrega no crea commits ni publica información.
+
+
+
 
 
 
