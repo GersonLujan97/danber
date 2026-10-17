@@ -79,7 +79,7 @@ def init(database, through):
 
 def export(path, database):
     parts = [
-        "-- Danber: instalacion inicial en base NUEVA, CockroachDB v26.2.7.",
+        "-- Danber: instalacion inicial en base NUEVA, CockroachDB v26.2.0 o v26.2.7.",
         "-- Ejecutar con errexit; DDL no es una transaccion global.",
         "-- No borrar una base existente para volver a ejecutar.",
         'CREATE DATABASE "' + database + '";',
@@ -93,7 +93,7 @@ def export(path, database):
     print("Script generado: " + str(path))
 
 def main():
-    parser = argparse.ArgumentParser(description="Migraciones Danber / CockroachDB v26.2.7")
+    parser = argparse.ArgumentParser(description="Migraciones Danber / CockroachDB v26.2.0 o v26.2.7")
     parser.add_argument("command", choices=["init", "apply", "status", "export"])
     parser.add_argument("--database", default="danber")
     parser.add_argument("--through", type=int)

@@ -95,7 +95,7 @@ def run():
     check("Actualización desde versión 3", scalar("SELECT count(*) FROM danber_meta.migracion;") == "3")
     migrate.apply(DB, None)
     migrate.apply(DB, None)
-    check("Siete migraciones y reejecución sin cambios", scalar("SELECT count(*) FROM danber_meta.migracion WHERE estado='aplicada';") == "7")
+    check("Migraciones y reejecución sin cambios", scalar("SELECT count(*) FROM danber_meta.migracion WHERE estado='aplicada';") == str(len(migrate.entries())))
     sql((ROOT / "db/tests/fixtures.sql").read_text(encoding="utf-8"))
     check("Datos iniciales sin pacientes reales", scalar("SELECT count(*) FROM pacientes.paciente;") == "2")
 
@@ -174,6 +174,8 @@ def run():
            "SET ROLE danber_runtime; UPDATE agenda.cambio_cita SET motivo='alterado' WHERE cita_id=" + literal(first) + ";", "42501")
     reject("Runtime no modifica versiones de migración",
            "SET ROLE danber_runtime; DELETE FROM danber_meta.migracion;", "42501")
+    reject("Runtime no crea tablas en public",
+           "SET ROLE danber_runtime; CREATE TABLE public.forbidden_runtime_sql_test(id INT PRIMARY KEY);", "42501")
     sql("INSERT INTO identidad.usuario_rol(usuario_id,rol_id) SELECT " + literal(ACTOR) + ",id FROM identidad.rol WHERE codigo IN ('maestro','recepcion');")
     check("Una cuenta tiene Maestro y Recepción", scalar("SELECT count(*) FROM identidad.usuario_rol WHERE usuario_id=" + literal(ACTOR) + ";") == "2")
 
@@ -202,7 +204,7 @@ def run():
     execute(target.read_text(encoding="utf-8"),"defaultdb")
     migrate.apply(exported_db,None)
     check("SQL único desde cero coincide con migraciones",
-          rows("SELECT count(*) AS total FROM danber_meta.migracion WHERE estado='aplicada';",exported_db)[0]["total"] == "7")
+          rows("SELECT count(*) AS total FROM danber_meta.migracion WHERE estado='aplicada';",exported_db)[0]["total"] == str(len(migrate.entries())))
 
     report = dict(server=version,database=DB,standalone_database=exported_db,
                   checks=checks,total=len(checks),serialization_retries=retry_count,

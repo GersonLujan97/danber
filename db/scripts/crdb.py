@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, quote
 
 ROOT = Path(__file__).resolve().parents[2]
-EXPECTED_VERSION = "26.2.7"
+SUPPORTED_VERSIONS = ("26.2.0", "26.2.7")
 
 class SqlError(RuntimeError):
     pass
@@ -54,8 +54,9 @@ def rows(sql, database=None):
 
 def assert_version(database=None):
     value = rows("SELECT version() AS version;", database)[0]["version"]
-    if not re.search(r"\bv" + re.escape(EXPECTED_VERSION) + r"\b", value):
-        raise RuntimeError("Se requiere CockroachDB v" + EXPECTED_VERSION +
+    fields = value.split()
+    if not fields or fields[0] != "CockroachDB" or not any("v" + v in fields[1:] for v in SUPPORTED_VERSIONS):
+        raise RuntimeError("Se requiere CockroachDB " + " o ".join(SUPPORTED_VERSIONS) +
                            "; no se aplicó SQL de migración. Verifica la versión del servidor.")
     return value
 

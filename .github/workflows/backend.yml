@@ -1,0 +1,39 @@
+name: Backend
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+  push:
+    branches: ["feat/**", "fix/**", main]
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Format
+        run: |
+          files=$(gofmt -l cmd internal)
+          if [ -n "$files" ]; then
+            printf '%s\n' "$files"
+            exit 1
+          fi
+      - name: Vet
+        run: go vet ./...
+      - name: Unit tests and race detector
+        run: go test -race -count=1 ./...
+      - name: Build
+        run: go build -o "$RUNNER_TEMP/danber-api" ./cmd/api

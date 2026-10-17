@@ -1,8 +1,10 @@
 # Crear Danber en CockroachDB local
 
-Entrega CHG-008 · 2026-10-17. Versión fijada: **CockroachDB 26.2.7**. Base inicial del primer recorrido: Identidad, Personal, Pacientes y Agenda. Incluye espera, horarios, bloqueos e historial; todavía no hay API ni pantallas.
+Entrega CHG-008 · 2026-10-17. Versiones admitidas: **CockroachDB 26.2.0 y 26.2.7** (CHG-012). El instalador opcional conserva 26.2.7 para instalaciones nuevas; no es necesario cambiar tu nodo 26.2.0. Base inicial del primer recorrido: Identidad, Personal, Pacientes y Agenda. Incluye espera, horarios, bloqueos e historial; todavía no hay API ni pantallas.
 
 Versión principal: [Crear la base local en Notion](https://app.notion.com/p/3fc2756ebb44819a8a6df741dc1f3e50).
+
+**CHG-011:** se agrega 008_restringir_ddl_public.sql para impedir DDL por el rol público. Bases existentes: ejecutar migrate.py apply; no repetir el SQL inicial. Las migraciones anteriores no cambian.
 
 ## Qué ejecutar ahora
 
@@ -19,7 +21,7 @@ Desde PowerShell, situado en C:\GERSON\ISAI\DANBER\CODE:
 En **otra terminal**, en la misma carpeta:
 
 ```powershell
-# 3. Crear danber y aplicar sus siete migraciones.
+# 3. Crear danber y aplicar sus ocho migraciones.
 .\db\scripts\Initialize-Database.ps1
 
 # 4. Consultar el historial de migraciones.
@@ -45,7 +47,7 @@ $env:DANBER_DATABASE_URL = 'postgresql://root@127.0.0.1:26257/defaultdb?sslmode=
 python .\db\scripts\migrate.py init --database danber
 ```
 
-Cambiar host, puerto, usuario y TLS según tu instancia. El ejecutor comprueba que el servidor es 26.2.7 antes de migrar. Si usas otra versión, detenerse y verificarla con el suite antes de cambiar la versión fijada; no quitar el chequeo para forzar compatibilidad.
+Cambiar host, puerto, usuario y TLS según tu instancia. El ejecutor comprueba que el servidor es 26.2.0 o 26.2.7 antes de migrar. Si usas otra versión, detenerse y verificarla con el suite antes de cambiar la versión fijada; no quitar el chequeo para forzar compatibilidad.
 
 Initialize-Database respeta una DANBER_DATABASE_URL ya definida. El parámetro --database selecciona explícitamente la base destino; el usuario necesita crear base/esquemas/tablas/roles y conceder privilegios. Usar una cuenta migradora, separada del futuro login SQL del backend.
 
@@ -53,7 +55,7 @@ Initialize-Database respeta una DANBER_DATABASE_URL ya definida. El parámetro -
 
 Archivo: [danber-inicial.sql](danber-inicial.sql). Crea **danber** y todos los objetos, catálogos y permisos de esta entrega.
 
-En una instancia 26.2.7, comprobar versión y ejecutar desde PowerShell:
+En una instancia 26.2.0 o 26.2.7, comprobar versión y ejecutar desde PowerShell:
 
 ```powershell
 & '.\.local\cockroach\cockroach-v26.2.7.windows-6.2-amd64\cockroach.exe' sql --url=$env:DANBER_DATABASE_URL --execute='SELECT version();'
@@ -83,6 +85,7 @@ No editar el archivo generado a mano. Para usar un nombre distinto, exportar con
 | 005_agenda.sql | Horario, excepciones, bloqueos, cita, espera, historial, guard e idempotencia |
 | 006_catalogos_y_permisos.sql | DNI y roles/permisos iniciales, sin personas reales |
 | 007_privilegios_runtime.sql | Rol SQL sin login danber_runtime con permisos restringidos |
+| 008_restringir_ddl_public.sql | Retira CREATE en esquema public al rol público; conserva permisos del propietario |
 | danber_meta.migracion | Historial de versión, nombre, SHA256 y estado |
 
 Una migración es un cambio versionado, no un script que se repite libremente. Cada archivo aplicado queda congelado por su checksum; nuevos cambios se incorporan en un archivo con número siguiente. Una reejecución correcta no duplica tablas ni catálogos.
@@ -148,5 +151,7 @@ Definir retención de historial/recibos, permisos de despliegue, conexión segur
 ## Fuentes técnicas
 
 [Release 26.2.7](https://docs.cockroachlabs.com/docs/releases/v26.2#v26-2-7), [CREATE TABLE](https://docs.cockroachlabs.com/docs/v26.2/create-table), [índices parciales](https://docs.cockroachlabs.com/docs/v26.2/partial-indexes), [DDL y transacciones](https://docs.cockroachlabs.com/docs/v26.2/online-schema-changes#schema-changes-within-transactions), [reintentos](https://docs.cockroachlabs.com/docs/v26.2/transaction-retry-error-reference), [CLI SQL](https://docs.cockroachlabs.com/docs/v26.2/cockroach-sql).
+
+
 
 

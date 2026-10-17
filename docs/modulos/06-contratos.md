@@ -1,5 +1,10 @@
 # Contratos entre capacidades y ficha de módulo
 
+**CHG-011 · 2026-10-17:** flujo de ramas adoptado e incremento feat/backend-inicial implementado: servidor Go, configuración, pool pgx, health/live y health/ready, cierre ordenado, contrato HTTP y CI. Integración local con CockroachDB real; nueva migración 008 restringe CREATE en public. Revisión de impacto pendiente. Cuenta Maestro, sesiones y capacidades de negocio aún no implementadas.
+
+[Ejecutar el backend inicial](../../backend/README.md). Los estados anteriores se conservan como antecedentes.
+
+
 **CHG-008 · 2026-10-17:** migraciones iniciales de CockroachDB 26.2.7 generadas y verificadas: siete versiones, 28 tablas más control de migración, SQL único y scripts de ejecución local. **37 comprobaciones correctas** en nodo aislado con datos ficticios. Autorización/API aún pendientes; las reglas de negocio no confirmadas conservan ese estado. Revisión de impacto pendiente.
 
 [Guía para crear la base local](../../db/README.md). Los antecedentes siguientes conservan su estado histórico.
@@ -161,6 +166,7 @@ Reglas, casos, contratos, integración y fallos esperados.
 ## Decisiones y pendientes
 ADR, supuestos, consecuencias y criterios para revisarlos.
 ```
+
 
 
 

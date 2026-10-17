@@ -1,5 +1,10 @@
 # Estructura preliminar del repositorio, Go y React
 
+**CHG-011 · 2026-10-17:** flujo de ramas adoptado e incremento feat/backend-inicial implementado: servidor Go, configuración, pool pgx, health/live y health/ready, cierre ordenado, contrato HTTP y CI. Integración local con CockroachDB real; nueva migración 008 restringe CREATE en public. Revisión de impacto pendiente. Cuenta Maestro, sesiones y capacidades de negocio aún no implementadas.
+
+[Ejecutar el backend inicial](../../backend/README.md). Los estados anteriores se conservan como antecedentes.
+
+
 Estado: **Propuesto**. Estos árboles son diseños, no carpetas de aplicación creadas. Se implementará solo lo necesario para el primer recorrido después de revisar A–C. Un repositorio común facilita revisar conjuntamente contrato HTTP, backend, frontend y migraciones.
 
 ## 1. Organización general
@@ -197,3 +202,4 @@ Fuentes primarias consultadas para las capacidades de estas herramientas: [React
 - Navegación y botones respetan capacidades, pero el servidor comprueba nuevamente operación y recurso.
 - Configuración enviada al navegador es pública. Claves de base, firma, correo o facturación nunca se exponen mediante variables de compilación frontend.
 - Formularios con etiquetas, teclado, foco y errores anunciables; fecha, moneda y zona visibles. No usar solamente colores para estado clínico o económico.
+

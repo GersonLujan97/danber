@@ -1,4 +1,4 @@
--- Danber: instalacion inicial en base NUEVA, CockroachDB v26.2.7.
+-- Danber: instalacion inicial en base NUEVA, CockroachDB v26.2.0 o v26.2.7.
 
 -- Ejecutar con errexit; DDL no es una transaccion global.
 
@@ -439,5 +439,16 @@ GRANT SELECT ON TABLE pacientes.tipo_documento TO danber_runtime;
 
 
 UPDATE danber_meta.migracion SET estado='aplicada', aplicada_en=now() WHERE version=7 AND estado='aplicando';
+
+-- 008_restringir_ddl_public.sql
+
+INSERT INTO danber_meta.migracion(version,nombre,sha256,estado) VALUES (8,'008_restringir_ddl_public.sql','674461041983d7b9ed71895b24b8eb41af4dc7a74264a2ea7897d7587f4144e3','aplicando');
+
+-- Backend inicial: el rol public no debe permitir DDL al usuario de ejecución.
+-- No modifica tablas ni datos; propietario y administrador conservan sus permisos.
+REVOKE CREATE ON SCHEMA public FROM public;
+
+
+UPDATE danber_meta.migracion SET estado='aplicada', aplicada_en=now() WHERE version=8 AND estado='aplicando';
 
 SELECT version,nombre,sha256,estado FROM danber_meta.migracion ORDER BY version;

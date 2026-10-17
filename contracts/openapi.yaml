@@ -1,0 +1,53 @@
+openapi: 3.1.0
+info:
+  title: Danber - comprobaciones operativas
+  version: 0.1.0
+  description: Incremento local inicial; no contiene operaciones de pacientes o autenticación.
+servers:
+  - url: http://127.0.0.1:8090
+paths:
+  /health/live:
+    get:
+      operationId: liveness
+      summary: Comprobar que el proceso responde
+      security: []
+      responses:
+        "200":
+          description: El proceso responde, independientemente de SQL.
+          headers:
+            Cache-Control:
+              schema: { type: string, const: no-store }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                additionalProperties: false
+                properties:
+                  status: { type: string, const: ok }
+  /health/ready:
+    get:
+      operationId: readiness
+      summary: Comprobar conectividad SQL con plazo de dos segundos
+      security: []
+      responses:
+        "200":
+          description: La conexión a la base responde.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                additionalProperties: false
+                properties:
+                  status: { type: string, const: ready }
+        "503":
+          description: Dependencia SQL no disponible; sin detalles internos.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                additionalProperties: false
+                properties:
+                  status: { type: string, const: unavailable }
