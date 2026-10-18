@@ -44,14 +44,6 @@ type handler struct {
 }
 
 func NewHandler(ops Operations, options HTTPOptions) (http.Handler, error) {
-	u, err := url.Parse(options.Origin)
-	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
-		return nil, errors.New("origen HTTP de autenticación inválido")
-	}
-	ip := net.ParseIP(u.Hostname())
-	if u.Hostname() != "localhost" && (ip == nil || !ip.IsLoopback()) {
-		return nil, errors.New("autenticación de esta entrega solo admite loopback")
-	}
 	if options.Logger == nil {
 		options.Logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
@@ -61,9 +53,21 @@ func NewHandler(ops Operations, options HTTPOptions) (http.Handler, error) {
 	mux.HandleFunc("GET /auth/session", h.current)
 	mux.HandleFunc("POST /auth/logout", func(w http.ResponseWriter, r *http.Request) { h.logout(w, r, false) })
 	mux.HandleFunc("POST /auth/logout-all", func(w http.ResponseWriter, r *http.Request) { h.logout(w, r, true) })
+	return guard(options, 4096, mux)
+}
+
+func guard(options HTTPOptions, maxBody int64, next http.Handler) (http.Handler, error) {
+	u, err := url.Parse(options.Origin)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
+		return nil, errors.New("origen HTTP de autenticación inválido")
+	}
+	ip := net.ParseIP(u.Hostname())
+	if u.Hostname() != "localhost" && (ip == nil || !ip.IsLoopback()) {
+		return nil, errors.New("autenticación de esta entrega solo admite loopback")
+	}
 	protection := http.NewCrossOriginProtection()
 	protection.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { failure(w, 403, "origen_no_permitido") }))
-	protected := protection.Handler(mux)
+	protected := protection.Handler(next)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		scheme := "http"
 		if r.TLS != nil {
@@ -98,7 +102,7 @@ func NewHandler(ops Operations, options HTTPOptions) (http.Handler, error) {
 			failure(w, 403, "cliente_no_permitido")
 			return
 		}
-		if r.ContentLength > 4096 {
+		if r.ContentLength > maxBody {
 			failure(w, 413, "cuerpo_demasiado_grande")
 			return
 		}

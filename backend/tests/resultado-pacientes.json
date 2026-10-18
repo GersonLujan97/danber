@@ -1,0 +1,82 @@
+{
+  "change": "CHG-015",
+  "date": "2026-10-18",
+  "status": "verified_local",
+  "branch": "feat/registro-pacientes",
+  "dependency": "PR #3 (autenticación), pendiente de integración al iniciar",
+  "versions": [
+    "26.2.0",
+    "26.2.7"
+  ],
+  "migrations": 11,
+  "integration": {
+    "patients-full-260.jsonl": {
+      "patient_cases": [
+        "TestPatientsHTTPAndPersistence/anonymous_CSRF_origin_and_rate_controls",
+        "TestPatientsHTTPAndPersistence/atomic_registration_detail_and_exact_lookup",
+        "TestPatientsHTTPAndPersistence/concurrent_equal_key_and_incompatible_payload",
+        "TestPatientsHTTPAndPersistence/concurrent_different_keys_same_document",
+        "TestPatientsHTTPAndPersistence/guardian_required_reused_and_never_overwritten",
+        "TestPatientsHTTPAndPersistence/catalog_active_validation_and_non_DNI_format",
+        "TestPatientsHTTPAndPersistence/concurrent_children_share_one_guardian",
+        "TestPatientsHTTPAndPersistence/audit_failure_rolls_back_entire_aggregate_and_key",
+        "TestPatientsHTTPAndPersistence/birthday_replay_preserves_original_result",
+        "TestPatientsHTTPAndPersistence/permissions_reloaded_and_enforced_before_resource_lookup",
+        "TestPatientsHTTPAndPersistence/runtime_cannot_erase_audit_or_idempotency"
+      ],
+      "upgrade_from_010": "pass",
+      "started_at": "2026-10-18T08:14:39.3995486-05:00",
+      "patient_suite": "pass"
+    },
+    "patients-267.jsonl": {
+      "patient_cases": [
+        "TestPatientsHTTPAndPersistence/anonymous_CSRF_origin_and_rate_controls",
+        "TestPatientsHTTPAndPersistence/atomic_registration_detail_and_exact_lookup",
+        "TestPatientsHTTPAndPersistence/concurrent_equal_key_and_incompatible_payload",
+        "TestPatientsHTTPAndPersistence/concurrent_different_keys_same_document",
+        "TestPatientsHTTPAndPersistence/guardian_required_reused_and_never_overwritten",
+        "TestPatientsHTTPAndPersistence/catalog_active_validation_and_non_DNI_format",
+        "TestPatientsHTTPAndPersistence/concurrent_children_share_one_guardian",
+        "TestPatientsHTTPAndPersistence/audit_failure_rolls_back_entire_aggregate_and_key",
+        "TestPatientsHTTPAndPersistence/birthday_replay_preserves_original_result",
+        "TestPatientsHTTPAndPersistence/permissions_reloaded_and_enforced_before_resource_lookup",
+        "TestPatientsHTTPAndPersistence/runtime_cannot_erase_audit_or_idempotency"
+      ],
+      "upgrade_from_010": "pass",
+      "started_at": "2026-10-18T08:18:53.0058798-05:00",
+      "patient_suite": "pass"
+    }
+  },
+  "full_backend_26_2_0": "pass",
+  "units": "pass",
+  "go_vet": "pass",
+  "go_vet_integration": "pass",
+  "go_build": "pass",
+  "go_mod_verify": "pass",
+  "local_race": "No ejecutado: -race requiere CGO; toolchain local sin CGO. Se verificará en CI Linux.",
+  "sql_checks_26_2_0": 38,
+  "sql_standalone_11_migrations": "pass",
+  "powershell_compiled_api": [
+    "login",
+    "tipos",
+    "alta UTF8",
+    "repetición misma clave sin duplicar",
+    "buscar documento",
+    "ficha",
+    "logout"
+  ],
+  "openapi": "YAML y referencias internas correctas, diez rutas; sin validador semántico integral",
+  "immutable_migrations_001_010": "bytes iguales a de4f003",
+  "impact_review": "Pendiente de revisión",
+  "notion": "https://app.notion.com/p/3fd2756ebb4481c79e62cc2616020ffb",
+  "data": "Solo datos ficticios en nodos en memoria y bases nuevas; BD del usuario no tocada",
+  "pending": [
+    "Validación operativa de menor <18 y cumpleaños 29/02",
+    "Tipos no DNI y validadores específicos",
+    "Alcance administrativo del permiso para recursos",
+    "Correcciones/edición y discrepancias de apoderado",
+    "Retención de claves y auditoría",
+    "Interfaz, Agenda y requisitos de despliegue de ADR 0014"
+  ],
+  "identity_regression_26_2_7": "pass"
+}

@@ -1,5 +1,7 @@
 # Diseño técnico del primer recorrido — Pacientes y Agenda
 
+**CHG-015 · 2026-10-18:** alta/búsqueda administrativa de pacientes con documento, apoderado, permisos, auditoría e idempotencia. Nueva migración 011; conservar 001–010. Verificado localmente en CockroachDB 26.2.0 y 26.2.7; revisión de impacto pendiente. [Guía de pacientes](../../backend/PACIENTES.md).
+
 **CHG-008 · 2026-10-17:** migraciones iniciales de CockroachDB 26.2.7 generadas y verificadas: siete versiones, 28 tablas más control de migración, SQL único y scripts de ejecución local. **37 comprobaciones correctas** en nodo aislado con datos ficticios. Autorización/API aún pendientes; las reglas de negocio no confirmadas conservan ese estado. Revisión de impacto pendiente.
 
 [Guía para crear la base local](../../db/README.md). Los antecedentes siguientes conservan su estado histórico.

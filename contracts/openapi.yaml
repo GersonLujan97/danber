@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: Danber - identidad y comprobaciones operativas
-  version: 0.2.0
+  title: Danber - identidad y pacientes
+  version: 0.3.0
   description: >-
-    CHG-014. Desarrollo local, sin rutas de pacientes/agenda. Autenticación de mismo origen;
+    CHG-015. Desarrollo local con registro y búsqueda administrativa de pacientes, sin agenda. Autenticación de mismo origen;
     Host debe coincidir con DANBER_HTTP_ADDR. HTTP de autenticación se rechaza con 426
     salvo DANBER_ALLOW_INSECURE_AUTH=true y peer loopback. Sin CORS ni proxies confiables.
     Sesiones opacas, cookies HttpOnly/SameSite=Strict/Secure con TLS; excepción local sin Secure.
@@ -175,6 +175,215 @@ paths:
         '426': { $ref: '#/components/responses/HTTPSRequired' }
         '429': { $ref: '#/components/responses/RateLimited' }
         '503': { $ref: '#/components/responses/Unavailable' }
+  /pacientes:
+    post:
+      operationId: registerPatient
+      summary: Registrar paciente con documento y apoderado condicional
+      description: Requiere pacientes.crear. Alta, apoderado, historial y clave en una transacción. Menor <18 y desde
+        66 requieren apoderado. Fecha en America/Lima. Apoderado existente exige coincidencia exacta de nombres/apellidos
+        normalizados; no se sobrescribe. Repetición confirmada no reevalúa edad. Un presupuesto compartido del módulo
+        de 120/IP/min y 600 global/min, por proceso; 16 KiB y cinco segundos. Permisos recargados por sesión; sin
+        datos clínicos.
+      security:
+      - sessionCookie: []
+      parameters:
+      - $ref: '#/components/parameters/ClientIntent'
+      - $ref: '#/components/parameters/CSRF'
+      - name: Idempotency-Key
+        in: header
+        required: true
+        description: UUID canónico en minúsculas distinto de cero. Conservar clave y cuerpo al reintentar. Misma cuenta/clave/cuerpo
+          devuelve el mismo 201; cuerpo distinto da 409.
+        schema:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f-]{36}$
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRegistration'
+      responses:
+        '201':
+          description: Resultado administrativo autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientCreated'
+          headers:
+            Location:
+              description: Ruta de la ficha, que exige permiso de lectura.
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '426':
+          $ref: '#/components/responses/HTTPSRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMedia'
+        '422':
+          description: Validación de campos, documento, edad o catálogo; sin reflejar el valor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientValidationError'
+        '409':
+          description: documento_duplicado, apoderado_datos_difieren o clave_incompatible. No devuelve ID/datos del
+            registro en conflicto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pacientes/buscar:
+    post:
+      operationId: findPatientByDocument
+      summary: Buscar por tipo y número exactos
+      description: Requiere pacientes.leer para el conjunto administrativo del establecimiento. Documento en cuerpo,
+        no en URL. No hay listado ni búsqueda por nombre. Un presupuesto compartido del módulo de 120/IP/min y 600
+        global/min, por proceso; 16 KiB y cinco segundos. Permisos recargados por sesión; sin datos clínicos.
+      security:
+      - sessionCookie: []
+      parameters:
+      - $ref: '#/components/parameters/ClientIntent'
+      - $ref: '#/components/parameters/CSRF'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientDocument'
+      responses:
+        '200':
+          description: Resultado administrativo autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientSummary'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '426':
+          $ref: '#/components/responses/HTTPSRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '415':
+          $ref: '#/components/responses/UnsupportedMedia'
+        '422':
+          description: Validación de campos, documento, edad o catálogo; sin reflejar el valor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientValidationError'
+        '404':
+          description: Paciente no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pacientes/{id}:
+    get:
+      operationId: getPatient
+      summary: Consultar ficha administrativa por UUID
+      description: Requiere pacientes.leer antes de consultar existencia del recurso. Incluye contacto y apoderado
+        principal vigente; sin historia clínica. Un presupuesto compartido del módulo de 120/IP/min y 600 global/min,
+        por proceso; 16 KiB y cinco segundos. Permisos recargados por sesión; sin datos clínicos.
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Resultado administrativo autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '426':
+          $ref: '#/components/responses/HTTPSRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '422':
+          description: Validación de campos, documento, edad o catálogo; sin reflejar el valor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientValidationError'
+        '404':
+          description: Paciente no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f-]{36}$
+  /pacientes/tipos-documento:
+    get:
+      operationId: patientDocumentTypes
+      summary: Consultar tipos de documento activos
+      description: Requiere pacientes.leer o pacientes.crear. Solo DNI viene precargado. Catálogo máximo 100 tipos;
+        no habilitar otros sin revisar formato y política operativa. Un presupuesto compartido del módulo de 120/IP/min
+        y 600 global/min, por proceso; 16 KiB y cinco segundos. Permisos recargados por sesión; sin datos clínicos.
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Resultado administrativo autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientDocumentTypes'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '413':
+          $ref: '#/components/responses/TooLarge'
+        '426':
+          $ref: '#/components/responses/HTTPSRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '422':
+          description: Validación de campos, documento, edad o catálogo; sin reflejar el valor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatientValidationError'
 components:
   securitySchemes:
     sessionCookie:
@@ -196,6 +405,241 @@ components:
       description: csrf_token recibido en login/session para la misma cookie.
       schema: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' }
   schemas:
+    PatientDocument:
+      type: object
+      additionalProperties: false
+      required:
+      - tipo
+      - numero
+      properties:
+        tipo:
+          type: string
+          maxLength: 30
+          description: Código activo; se aplica upper/trim. Solo DNI precargado.
+        numero:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: 'Texto con ceros iniciales; DNI exactamente ocho dígitos ASCII. Otros: upper/trim y sin controles;
+            formatos específicos pendientes.'
+    PatientGuardian:
+      type: object
+      additionalProperties: false
+      required:
+      - nombres
+      - apellidos
+      - documento
+      - parentesco
+      properties:
+        nombres:
+          type: string
+          minLength: 1
+          maxLength: 150
+        apellidos:
+          type: string
+          minLength: 1
+          maxLength: 150
+        documento:
+          $ref: '#/components/schemas/PatientDocument'
+        parentesco:
+          type: string
+          minLength: 1
+          maxLength: 80
+    PatientRegistration:
+      type: object
+      additionalProperties: false
+      required:
+      - nombres
+      - apellidos
+      - fecha_nacimiento
+      - direccion
+      - telefono
+      - documento
+      properties:
+        nombres:
+          type: string
+          minLength: 1
+          maxLength: 150
+        apellidos:
+          type: string
+          minLength: 1
+          maxLength: 150
+        fecha_nacimiento:
+          type: string
+          format: date
+          description: Fecha civil válida y no futura al alta nueva.
+        estado_civil:
+          type: string
+          minLength: 0
+          maxLength: 30
+        ocupacion:
+          type: string
+          minLength: 0
+          maxLength: 150
+        direccion:
+          type: string
+          minLength: 1
+          maxLength: 500
+        telefono:
+          type: string
+          minLength: 1
+          maxLength: 30
+        correo:
+          type: string
+          maxLength: 254
+          description: Vacío/omitido o dirección de correo simple sin nombre de presentación.
+        documento:
+          $ref: '#/components/schemas/PatientDocument'
+        apoderado:
+          anyOf:
+          - $ref: '#/components/schemas/PatientGuardian'
+          - type: 'null'
+    PatientCreated:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          const: 1
+    PatientSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nombres
+      - apellidos
+      - estado
+      - documento
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombres:
+          type: string
+          minLength: 1
+          maxLength: 150
+        apellidos:
+          type: string
+          minLength: 1
+          maxLength: 150
+        estado:
+          type: string
+          enum:
+          - activo
+          - inactivo
+        documento:
+          $ref: '#/components/schemas/PatientDocument'
+    Patient:
+      type: object
+      additionalProperties: false
+      required:
+      - nombres
+      - apellidos
+      - fecha_nacimiento
+      - direccion
+      - telefono
+      - documento
+      - id
+      - version
+      - estado
+      - estado_civil
+      - ocupacion
+      - correo
+      properties:
+        nombres:
+          type: string
+          minLength: 1
+          maxLength: 150
+        apellidos:
+          type: string
+          minLength: 1
+          maxLength: 150
+        fecha_nacimiento:
+          type: string
+          format: date
+          description: Fecha civil válida y no futura al alta nueva.
+        estado_civil:
+          type: string
+          minLength: 0
+          maxLength: 30
+        ocupacion:
+          type: string
+          minLength: 0
+          maxLength: 150
+        direccion:
+          type: string
+          minLength: 1
+          maxLength: 500
+        telefono:
+          type: string
+          minLength: 1
+          maxLength: 30
+        correo:
+          type: string
+          maxLength: 254
+          description: Vacío/omitido o dirección de correo simple sin nombre de presentación.
+        documento:
+          $ref: '#/components/schemas/PatientDocument'
+        apoderado:
+          anyOf:
+          - $ref: '#/components/schemas/PatientGuardian'
+          - type: 'null'
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        estado:
+          type: string
+          enum:
+          - activo
+          - inactivo
+    PatientDocumentTypes:
+      type: object
+      additionalProperties: false
+      required:
+      - tipos
+      properties:
+        tipos:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - codigo
+            - nombre
+            properties:
+              codigo:
+                type: string
+                minLength: 1
+                maxLength: 30
+              nombre:
+                type: string
+                minLength: 1
+                maxLength: 120
+    PatientValidationError:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      - campo
+      - codigo
+      properties:
+        error:
+          type: string
+          const: datos_invalidos
+        campo:
+          type: string
+        codigo:
+          type: string
     Principal:
       type: object
       additionalProperties: false
@@ -235,17 +679,17 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     Forbidden:
-      description: Host/origen, Fetch Metadata, cabecera de cliente o CSRF rechazados.
+      description: Permiso denegado, Host/origen, Fetch Metadata, cabecera de cliente o CSRF rechazados.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     TooLarge:
-      description: Cuerpo de solicitud supera 4096 bytes.
+      description: "Cuerpo supera el límite: 4096 bytes en acceso, 16384 en pacientes."
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     UnsupportedMedia:
-      description: Login requiere application/json.
+      description: Login y POST de pacientes requieren application/json.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }

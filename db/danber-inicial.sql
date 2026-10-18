@@ -482,4 +482,24 @@ CREATE INDEX sesion_usuario_activa ON identidad.sesion (usuario_id) WHERE revoca
 
 UPDATE danber_meta.migracion SET estado='aplicada', aplicada_en=now() WHERE version=10 AND estado='aplicando';
 
+-- 011_registro_paciente_idempotente.sql
+
+INSERT INTO danber_meta.migracion(version,nombre,sha256,estado) VALUES (11,'011_registro_paciente_idempotente.sql','9a6d567e027f996d06d8f64b989fa94c13b1676ff9e69ba3c0cd215362946629','aplicando');
+
+-- Reintentos del alta: misma cuenta + clave conserva la misma respuesta.
+-- La huella es SHA-256 del comando normalizado; no almacena el cuerpo HTTP.
+CREATE TABLE pacientes.registro_idempotente (
+  actor_id UUID NOT NULL REFERENCES identidad.usuario(id),
+  clave UUID NOT NULL,
+  huella BYTES NOT NULL CHECK (length(huella) = 32),
+  paciente_id UUID NULL REFERENCES pacientes.paciente(id),
+  creado_en TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (actor_id, clave)
+);
+-- El caso de uso completa paciente_id en la misma transacción que reclama la clave.
+GRANT SELECT, INSERT, UPDATE ON TABLE pacientes.registro_idempotente TO danber_runtime;
+
+
+UPDATE danber_meta.migracion SET estado='aplicada', aplicada_en=now() WHERE version=11 AND estado='aplicando';
+
 SELECT version,nombre,sha256,estado FROM danber_meta.migracion ORDER BY version;
