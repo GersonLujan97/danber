@@ -7,17 +7,41 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
-	DatabaseURL string
-	HTTPAddr    string
+	DatabaseURL       string
+	HTTPAddr          string
+	AllowInsecureAuth bool
+	SessionIdle       time.Duration
+	SessionTTL        time.Duration
 }
 
 func Load(getenv func(string) string) (Config, error) {
 	cfg := Config{DatabaseURL: strings.TrimSpace(getenv("DANBER_DATABASE_URL")), HTTPAddr: strings.TrimSpace(getenv("DANBER_HTTP_ADDR"))}
 	if cfg.HTTPAddr == "" {
 		cfg.HTTPAddr = "127.0.0.1:8090"
+	}
+	cfg.SessionIdle = 15 * time.Minute
+	cfg.SessionTTL = 8 * time.Hour
+	if value := getenv("DANBER_ALLOW_INSECURE_AUTH"); value != "" {
+		if value != "true" && value != "false" {
+			return Config{}, errors.New("DANBER_ALLOW_INSECURE_AUTH requiere true o false")
+		}
+		cfg.AllowInsecureAuth = value == "true"
+	}
+	for key, target := range map[string]*time.Duration{"DANBER_SESSION_IDLE": &cfg.SessionIdle, "DANBER_SESSION_TTL": &cfg.SessionTTL} {
+		if value := getenv(key); value != "" {
+			duration, err := time.ParseDuration(value)
+			if err != nil {
+				return Config{}, errors.New("duración de sesión inválida")
+			}
+			*target = duration
+		}
+	}
+	if cfg.SessionIdle < time.Minute || cfg.SessionIdle > time.Hour || cfg.SessionTTL < 30*time.Minute || cfg.SessionTTL > 24*time.Hour || cfg.SessionIdle > cfg.SessionTTL {
+		return Config{}, errors.New("sesión requiere inactividad de 1m–1h, duración de 30m–24h e inactividad no mayor a duración")
 	}
 	u, err := url.Parse(cfg.DatabaseURL)
 	if err != nil || (u.Scheme != "postgres" && u.Scheme != "postgresql") || u.Hostname() == "" {

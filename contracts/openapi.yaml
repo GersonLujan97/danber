@@ -1,10 +1,16 @@
 openapi: 3.1.0
 info:
-  title: Danber - comprobaciones operativas
-  version: 0.1.0
-  description: Incremento local inicial; no contiene operaciones de pacientes o autenticación.
+  title: Danber - identidad y comprobaciones operativas
+  version: 0.2.0
+  description: >-
+    CHG-014. Desarrollo local, sin rutas de pacientes/agenda. Autenticación de mismo origen;
+    Host debe coincidir con DANBER_HTTP_ADDR. HTTP de autenticación se rechaza con 426
+    salvo DANBER_ALLOW_INSECURE_AUTH=true y peer loopback. Sin CORS ni proxies confiables.
+    Sesiones opacas, cookies HttpOnly/SameSite=Strict/Secure con TLS; excepción local sin Secure.
+    Valores iniciales de sesión 15m de inactividad y 8h absolutos; revisables.
 servers:
   - url: http://127.0.0.1:8090
+    description: Local; autenticación HTTP requiere la excepción explícita anterior.
 paths:
   /health/live:
     get:
@@ -51,3 +57,213 @@ paths:
                 additionalProperties: false
                 properties:
                   status: { type: string, const: unavailable }
+  /auth/login:
+    post:
+      operationId: login
+      summary: Verificar credenciales y abrir una sesión nueva
+      description: >-
+        Máximo 4096 bytes, exactamente usuario y contrasena; rechaza campos duplicados/desconocidos.
+        Mismo 401 ante usuario ausente, contraseña incorrecta o suspensión. Hasta 10 solicitudes/IP/min,
+        60 globales/min y 5/nombre normalizado/min por proceso. Máximo dos verificaciones simultáneas.
+        Una cookie previa de la misma cuenta se revoca al autenticar; no se acepta como sesión nueva.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ClientIntent'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [usuario, contrasena]
+              properties:
+                usuario: { type: string, minLength: 1, maxLength: 150 }
+                contrasena: { type: string, minLength: 1, maxLength: 128, format: password, writeOnly: true }
+      responses:
+        '200':
+          description: Sesión creada y auditada; bearer solo en Set-Cookie, no en JSON.
+          headers:
+            Set-Cookie:
+              description: danber_session; Path=/; HttpOnly; SameSite=Strict; Secure con TLS; sin Domain.
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string, const: no-store }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CurrentSession' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '415': { $ref: '#/components/responses/UnsupportedMedia' }
+        '426': { $ref: '#/components/responses/HTTPSRequired' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /auth/session:
+    get:
+      operationId: currentSession
+      summary: Consultar sesión y permisos efectivos actuales
+      description: >-
+        Comprueba cuenta activa, revocación, versión, cambio de contraseña y vencimientos en SQL.
+        Actualiza actividad, sin extender vencimiento absoluto. Recarga roles/permisos; no decide
+        autorización por recurso. Hasta 120 solicitudes/IP/min y 600 globales/min para sesión/cierres.
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Identidad de la sesión, vencimiento absoluto y CSRF; sin datos clínicos ni bearer.
+          headers:
+            Cache-Control:
+              schema: { type: string, const: no-store }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CurrentSession' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '426': { $ref: '#/components/responses/HTTPSRequired' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Revocar la sesión presentada y retirar cookie
+      description: >-
+        Exige CSRF ligado a la cookie y origen permitido. Repetir un cierre confirmado no duplica
+        auditoría. Puede cerrar una sesión vencida; no concede acceso. Límites compartidos con session.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ClientIntent'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204':
+          description: Revocación confirmada y cookie retirada; sin cuerpo.
+          headers:
+            Set-Cookie:
+              description: Retira danber_session con Path=/ y Max-Age negativo.
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '426': { $ref: '#/components/responses/HTTPSRequired' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /auth/logout-all:
+    post:
+      operationId: logoutAllOwnSessions
+      summary: Revocar todas las sesiones de la cuenta autenticada
+      description: >-
+        Requiere sesión vigente y CSRF. Incrementa versión, revoca sesiones y registra auditoría
+        en una transacción serializable. También invalida esta cookie. Un login posterior puede
+        abrir una sesión con la nueva versión; se controla concurrencia con login.
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ClientIntent'
+        - $ref: '#/components/parameters/CSRF'
+      responses:
+        '204':
+          description: Revocación confirmada y cookie retirada; sin cuerpo.
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '426': { $ref: '#/components/responses/HTTPSRequired' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: danber_session
+      description: Token opaco aleatorio de 256 bits; no se envía como Authorization ni en URL.
+  parameters:
+    ClientIntent:
+      name: X-Danber-Client
+      in: header
+      required: true
+      description: Señal de cliente JSON; no es un secreto ni sustituye sesión/CSRF.
+      schema: { type: string, const: '1' }
+    CSRF:
+      name: X-Danber-CSRF
+      in: header
+      required: true
+      description: csrf_token recibido en login/session para la misma cookie.
+      schema: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' }
+  schemas:
+    Principal:
+      type: object
+      additionalProperties: false
+      required: [id, usuario, roles, permisos]
+      properties:
+        id: { type: string, format: uuid }
+        usuario: { type: string }
+        roles:
+          type: array
+          items: { type: string, enum: [maestro, recepcion, odontologo] }
+        permisos:
+          type: array
+          items: { type: string }
+    CurrentSession:
+      type: object
+      additionalProperties: false
+      required: [principal, expira_en, csrf_token]
+      properties:
+        principal: { $ref: '#/components/schemas/Principal' }
+        expira_en: { type: string, format: date-time }
+        csrf_token: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' }
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error: { type: string }
+  responses:
+    InvalidRequest:
+      description: JSON, claves, tipo de campo o cookies ambiguos; sin reflejar datos recibidos.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthenticated:
+      description: Credenciales o sesión no válidas; sin revelar existencia/estado de cuenta.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Host/origen, Fetch Metadata, cabecera de cliente o CSRF rechazados.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooLarge:
+      description: Cuerpo de solicitud supera 4096 bytes.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    UnsupportedMedia:
+      description: Login requiere application/json.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    HTTPSRequired:
+      description: HTTPS requerido; excepción explícita solo para HTTP en loopback.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Presupuesto de solicitudes o verificaciones simultáneas excedido; sin suspender permanentemente.
+      headers:
+        Retry-After:
+          schema: { type: string, pattern: '^[0-9]+$' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unavailable:
+      description: No se pudo confirmar operación; sin error SQL, credenciales ni detalle interno.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

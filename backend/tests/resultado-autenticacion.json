@@ -1,0 +1,122 @@
+{
+  "change": "CHG-014",
+  "date": "2026-10-18",
+  "go": "1.26.1",
+  "environment": "Windows, CockroachDB real aislado en memoria; datos ficticios",
+  "integration": {
+    "26.2.0": {
+      "command": "go test -tags=integration -count=1 ./...",
+      "tests": [
+        {
+          "name": "generic_failures",
+          "elapsed_seconds": 0.55
+        },
+        {
+          "name": "hash_cookie_and_live_permissions",
+          "elapsed_seconds": 0.39
+        },
+        {
+          "name": "rotation_and_logout_csrf",
+          "elapsed_seconds": 0.57
+        },
+        {
+          "name": "concurrent_logout_records_one_event",
+          "elapsed_seconds": 0.28
+        },
+        {
+          "name": "idle_absolute_and_no_sliding_absolute_expiry",
+          "elapsed_seconds": 0.76
+        },
+        {
+          "name": "logout_all_revokes_existing_and_allows_new_login",
+          "elapsed_seconds": 0.67
+        },
+        {
+          "name": "concurrent_login_and_revoke_all_have_consistent_versions",
+          "elapsed_seconds": 0.43
+        },
+        {
+          "name": "suspension_version_and_password_timestamp_invalidate_access",
+          "elapsed_seconds": 0.53
+        },
+        {
+          "name": "failed_audit_rolls_back_session_and_revocation",
+          "elapsed_seconds": 3.04
+        },
+        {
+          "name": "permissions_are_reloaded_and_role_does_not_bypass_catalog",
+          "elapsed_seconds": 0.42
+        }
+      ],
+      "completed_at": "2026-10-18T00:08:22.6543906-05:00",
+      "result": "pass"
+    },
+    "26.2.7": {
+      "command": "go test -tags=integration -count=1 -run TestAuthenticationHTTPWithCockroach ./internal/identidad",
+      "tests": [
+        {
+          "name": "generic_failures",
+          "elapsed_seconds": 0.81
+        },
+        {
+          "name": "hash_cookie_and_live_permissions",
+          "elapsed_seconds": 0.54
+        },
+        {
+          "name": "rotation_and_logout_csrf",
+          "elapsed_seconds": 0.83
+        },
+        {
+          "name": "concurrent_logout_records_one_event",
+          "elapsed_seconds": 0.47
+        },
+        {
+          "name": "idle_absolute_and_no_sliding_absolute_expiry",
+          "elapsed_seconds": 0.61
+        },
+        {
+          "name": "logout_all_revokes_existing_and_allows_new_login",
+          "elapsed_seconds": 0.95
+        },
+        {
+          "name": "concurrent_login_and_revoke_all_have_consistent_versions",
+          "elapsed_seconds": 0.59
+        },
+        {
+          "name": "suspension_version_and_password_timestamp_invalidate_access",
+          "elapsed_seconds": 0.82
+        },
+        {
+          "name": "failed_audit_rolls_back_session_and_revocation",
+          "elapsed_seconds": 3.08
+        },
+        {
+          "name": "permissions_are_reloaded_and_role_does_not_bypass_catalog",
+          "elapsed_seconds": 0.51
+        }
+      ],
+      "completed_at": "2026-10-18T00:09:49.1954133-05:00",
+      "result": "pass"
+    }
+  },
+  "sql_suite_26_2_0": {
+    "checks": 38,
+    "report": "db/tests/resultado-verificacion.json"
+  },
+  "unit_scope": "Verificación/hash ficticio, PHC acotado, token aleatorio/solo hash en persistencia, origen/Host/Fetch Metadata/CSRF, JSON/tamaño, cookies TLS, presupuestos concurrentes y memoria, permisos denegados por defecto, errores sin secretos, configuración, reintentos/COMMIT incierto",
+  "other_checks": [
+    "go vet ./...",
+    "go build ./...",
+    "go mod verify",
+    "OpenAPI YAML y referencias internas",
+    "enlaces locales",
+    "001–009 conservan bytes/checksums"
+  ],
+  "limits": "CI se registra aparte en PR/Notion. Sin prueba de penetración externa ni afirmación de conformidad legal; sin frontend ni despliegue público. No se toca la base o contraseña real del usuario.",
+  "powershell_e2e_26_2_0": "PASS: proceso cmd/api, cuenta ficticia creada por CLI, Invoke-RestMethod login/session/logout con WebSession y CSRF; sin imprimir secretos",
+  "upgrade_009_to_010_26_2_0": {
+    "result": "pass",
+    "completed_at": "2026-10-18T05:28:32.385743-05:00",
+    "scope": "cuenta/credencial/sesión previas preservadas; detecta esquema pendiente y aplica defaults sobre datos existentes"
+  }
+}

@@ -41,3 +41,23 @@ func TestHashUsesSaltAndCanBeVerified(t *testing.T) {
 		t.Fatal("different password accepted")
 	}
 }
+
+func TestVerifierRejectsWrongPasswordsAndUnboundedParameters(t *testing.T) {
+	hash, err := (Argon2id{}).Hash([]byte("frase ficticia de pruebas"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	valid, err := (Argon2id{}).Verify(hash, []byte("frase ficticia de pruebas"))
+	if err != nil || !valid {
+		t.Fatal("valid credential rejected")
+	}
+	valid, err = (Argon2id{}).Verify(hash, []byte("otra frase ficticia"))
+	if err != nil || valid {
+		t.Fatal("wrong password accepted")
+	}
+	for _, encoded := range []string{"", strings.Replace(hash, "m=19456", "m=999999999", 1), strings.Replace(hash, "v=19", "v=16", 1), hash + "$extra"} {
+		if _, err = (Argon2id{}).Verify(encoded, []byte("test")); err == nil {
+			t.Fatal("unsupported PHC accepted")
+		}
+	}
+}

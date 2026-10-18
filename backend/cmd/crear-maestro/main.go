@@ -63,7 +63,7 @@ func run(ctx context.Context, args []string, out io.Writer, env func(string) str
 	if err := create(ctx, *username, secret, cfg.DatabaseURL); err != nil {
 		return err
 	}
-	fmt.Fprintln(out, "Cuenta inicial creada con roles Maestro y Recepción. El inicio de sesión se implementará en la siguiente etapa.")
+	fmt.Fprintln(out, "Cuenta inicial creada con roles Maestro y Recepción.")
 	return nil
 }
 

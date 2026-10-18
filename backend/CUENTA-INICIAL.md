@@ -1,5 +1,7 @@
 # Crear la cuenta Maestro inicial
 
+**Actualización CHG-014:** el usuario informó creación correcta de su cuenta. No repetir este comando para iniciar sesión. [Acceso y seguridad en Notion](https://app.notion.com/p/3fd2756ebb4481cfa6ddc7e41e798fe9) contiene la nueva etapa HTTP; [respaldo técnico](AUTENTICACION-Y-SEGURIDAD.md). El resto conserva el contexto de CHG-013.
+
 CHG-013 · 2026-10-17. Incremento `feat/cuenta-inicial`, posterior al PR #1 integrado en `main` (583343b). Alcance autorizado por Isai: continuar con la cuenta inicial. Revisión de impacto: **Pendiente de revisión**. La creación real de tu cuenta se hace en tu terminal, con una contraseña que eliges tú.
 
 ## Qué se crea

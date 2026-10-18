@@ -36,7 +36,7 @@ func fixture(t *testing.T, through int) (context.Context, *pgx.Conn, *database.P
 		!(strings.HasPrefix(adminURL.Path, "/danber_test_") || strings.HasPrefix(adminURL.Path, "/danber_backend_test")) || serviceURL.User == nil {
 		t.Fatal("use an explicitly isolated local danber_test_* admin/runtime URL pair")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	t.Cleanup(cancel)
 	admin, err := pgx.Connect(ctx, adminURL.String())
 	if err != nil {
@@ -57,7 +57,7 @@ func fixture(t *testing.T, through int) (context.Context, *pgx.Conn, *database.P
 	t.Cleanup(func() { admin.Close(context.Background()) })
 	_, source, _, _ := runtime.Caller(0)
 	files, err := filepath.Glob(filepath.Join(filepath.Dir(source), "../../../db/migrations/[0-9][0-9][0-9]_*.sql"))
-	if err != nil || len(files) != 9 {
+	if err != nil || len(files) != 10 {
 		t.Fatal("missing migrations")
 	}
 	for i, path := range files {

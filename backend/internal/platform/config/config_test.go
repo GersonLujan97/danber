@@ -24,10 +24,14 @@ func TestLoadRejectsUnsafeConfiguration(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := Load(func(key string) string {
-				if key == "DANBER_DATABASE_URL" {
+				switch key {
+				case "DANBER_DATABASE_URL":
 					return tt.url
+				case "DANBER_HTTP_ADDR":
+					return tt.addr
+				default:
+					return ""
 				}
-				return tt.addr
 			})
 			if err == nil {
 				t.Fatal("accepted unsafe configuration")

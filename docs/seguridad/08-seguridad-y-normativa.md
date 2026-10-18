@@ -1,5 +1,7 @@
 # Seguridad y normativa peruana: revisión inicial
 
+**CHG-014 · 2026-10-18:** se concreta seguridad durante cada incremento. Sesiones HTTP, origen/CSRF, rate limit, controles de recursos y casos de ataque están en [Notion](https://app.notion.com/p/3fd2756ebb4481cfa6ddc7e41e798fe9) y [guía técnica](../../backend/AUTENTICACION-Y-SEGURIDAD.md). Implementado y verificado localmente; revisión de impacto pendiente. La propuesta y las fuentes normativas inferiores conservan su fecha/estado; esta implementación no acredita cumplimiento legal ni resuelve los controles pendientes de despliegue.
+
 **CHG-007 · 2026-10-16:** diseño técnico del primer recorrido elaborado por instrucción del usuario. Diccionario con tipos/obligatoriedad, relaciones y restricciones; flujo/transiciones; matriz de permisos y casos de aceptación. Estado del diseño: **Propuesto; revisión de impacto pendiente**. No equivale a migraciones verificadas ni aplicación implementada. Los antecedentes siguientes conservan su historia; para concretar implementación consultar el diseño vigente.
 
 [Leer el diseño técnico vigente](../base-datos/06-diseno-tecnico-pacientes-agenda.md).

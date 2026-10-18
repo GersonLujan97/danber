@@ -1,5 +1,9 @@
 # Danber — sistema de gestión odontológica
 
+**CHG-014 · 2026-10-18:** main actualizado a c0fb8ca (PR #2 integrado). El usuario informa creación correcta de su cuenta. Autenticación HTTP y seguridad por incremento implementadas y verificadas localmente en `feat/autenticacion`: sesiones, CSRF/origen, límites de solicitudes/CPU y revocación. Nueva migración 010; no volver a crear la cuenta. Revisión de impacto pendiente.
+
+[Acceso y seguridad en Notion](https://app.notion.com/p/3fd2756ebb4481cfa6ddc7e41e798fe9): ejecución, motivos, ataques de ejemplo, límites y controles previstos. Respaldo: [guía integrada](backend/AUTENTICACION-Y-SEGURIDAD.md) y [ADR 0014](docs/decisiones/0014-autenticacion-y-seguridad-incremental.md).
+
 **CHG-013 · 2026-10-17:** PR #1 integrado y copia local actualizada a main 583343b. Cuenta Maestro inicial por consola en `feat/cuenta-inicial`: contraseña sin eco, Argon2id, roles Maestro + Recepción y auditoría atómicos; migración 009. Implementado y verificado localmente; revisión de impacto pendiente. Tu cuenta real se crea después en tu terminal. Sesiones aún pendientes.
 
 Guía principal: [Cuenta Maestro inicial en Notion](https://app.notion.com/p/3fc2756ebb448101ba65e6e54e1532ca). Respaldo técnico: [crear cuenta](backend/CUENTA-INICIAL.md) y [ADR 0013](docs/decisiones/0013-cuenta-maestro-inicial.md).

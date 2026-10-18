@@ -1,5 +1,9 @@
 # Instrucciones de trabajo — Danber
 
+**CHG-014 · 2026-10-18:** main actualizado a c0fb8ca (PR #2 integrado). El usuario informa creación correcta de su cuenta. Autenticación HTTP y seguridad por incremento implementadas y verificadas localmente en `feat/autenticacion`: sesiones, CSRF/origen, límites de solicitudes/CPU y revocación. Nueva migración 010; no volver a crear la cuenta. Revisión de impacto pendiente.
+
+[Acceso y seguridad en Notion](https://app.notion.com/p/3fd2756ebb4481cfa6ddc7e41e798fe9): ejecución, motivos, ataques de ejemplo, límites y controles previstos. Respaldo: [guía integrada](backend/AUTENTICACION-Y-SEGURIDAD.md) y [ADR 0014](docs/decisiones/0014-autenticacion-y-seguridad-incremental.md).
+
 **CHG-013 · 2026-10-17:** PR #1 integrado y copia local actualizada a main 583343b. Cuenta Maestro inicial por consola en `feat/cuenta-inicial`: contraseña sin eco, Argon2id, roles Maestro + Recepción y auditoría atómicos; migración 009. Implementado y verificado localmente; revisión de impacto pendiente. Tu cuenta real se crea después en tu terminal. Sesiones aún pendientes.
 
 Guía principal: [Cuenta Maestro inicial en Notion](https://app.notion.com/p/3fc2756ebb448101ba65e6e54e1532ca). Respaldo técnico: [crear cuenta](backend/CUENTA-INICIAL.md) y [ADR 0013](docs/decisiones/0013-cuenta-maestro-inicial.md).
@@ -41,7 +45,7 @@ Detalle: [ADR 0004](docs/decisiones/0004-horarios-roles-y-bloqueos.md).
 
 ## Alcance y estado
 
-El proyecto está en descubrimiento y revisión arquitectónica. Leer `README.md` y el estado vigente en Notion —glosario, contextos, ADR y bitácora— antes de proponer cambios. Los ADR iniciales fueron aceptados provisionalmente el 2026-10-16 (CHG-002 en Notion), tras la lectura del usuario. Las reglas abiertas y la revisión de impacto técnico siguen pendientes; no interpretar la conformidad como implementación o pruebas completadas. Seguir la fase que solicite el usuario; la entrega inicial comprende A–C y propuestas preliminares, sin generar toda la aplicación.
+El proyecto avanza por incrementos autorizados; conserva el descubrimiento y las decisiones arquitectónicas como antecedentes. Leer `README.md` y el estado vigente en Notion —glosario, contextos, ADR y bitácora— antes de proponer cambios. Los ADR iniciales fueron aceptados provisionalmente el 2026-10-16 (CHG-002), tras la lectura del usuario. Las reglas abiertas y la revisión de impacto técnico siguen pendientes; no interpretar conformidad como pruebas completadas. Seguir la fase solicitada: backend, cuenta inicial y autenticación tienen sus propios registros y evidencias posteriores; la entrega A–C es histórica. No generar toda la aplicación por adelantado.
 
 Estas instrucciones orientan el trabajo; la autorización y las decisiones explícitas del usuario prevalecen. No convertir pendientes en requisitos confirmados ni solicitar de nuevo información ya confirmada.
 
