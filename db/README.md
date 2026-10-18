@@ -1,6 +1,8 @@
 # Crear Danber en CockroachDB local
 
-Entrega CHG-008 · 2026-10-17. Versiones admitidas: **CockroachDB 26.2.0 y 26.2.7** (CHG-012). El instalador opcional conserva 26.2.7 para instalaciones nuevas; no es necesario cambiar tu nodo 26.2.0. Base inicial del primer recorrido: Identidad, Personal, Pacientes y Agenda. Incluye espera, horarios, bloqueos e historial; todavía no hay API ni pantallas.
+**CHG-013 · 2026-10-17:** nueve migraciones. La nueva 009 agrega una tabla/fila de control para crear la cuenta inicial una sola vez; no contiene usuarios ni contraseñas por defecto. Bases existentes: `python db/scripts/migrate.py apply --database danber` con conexión migradora; no repetir el SQL inicial. Ver [cuenta Maestro en Notion](https://app.notion.com/p/3fc2756ebb448101ba65e6e54e1532ca). Revisión de impacto pendiente.
+
+Entrega CHG-008 · 2026-10-17. Versiones admitidas: **CockroachDB 26.2.0 y 26.2.7** (CHG-012). El instalador opcional conserva 26.2.7 para instalaciones nuevas; no es necesario cambiar tu nodo 26.2.0. Base inicial del primer recorrido: Identidad, Personal, Pacientes y Agenda. Incluye espera, horarios, bloqueos e historial; el backend expone health y crea la cuenta inicial por consola; las rutas de pacientes/agenda y las pantallas siguen pendientes.
 
 Versión principal: [Crear la base local en Notion](https://app.notion.com/p/3fc2756ebb44819a8a6df741dc1f3e50).
 
@@ -21,7 +23,7 @@ Desde PowerShell, situado en C:\GERSON\ISAI\DANBER\CODE:
 En **otra terminal**, en la misma carpeta:
 
 ```powershell
-# 3. Crear danber y aplicar sus ocho migraciones.
+# 3. Crear danber y aplicar sus nueve migraciones.
 .\db\scripts\Initialize-Database.ps1
 
 # 4. Consultar el historial de migraciones.
@@ -86,6 +88,7 @@ No editar el archivo generado a mano. Para usar un nombre distinto, exportar con
 | 006_catalogos_y_permisos.sql | DNI y roles/permisos iniciales, sin personas reales |
 | 007_privilegios_runtime.sql | Rol SQL sin login danber_runtime con permisos restringidos |
 | 008_restringir_ddl_public.sql | Retira CREATE en esquema public al rol público; conserva permisos del propietario |
+| 009_aprovisionamiento_inicial.sql | Fila de control de la cuenta inicial; runtime solo SELECT/UPDATE |
 | danber_meta.migracion | Historial de versión, nombre, SHA256 y estado |
 
 Una migración es un cambio versionado, no un script que se repite libremente. Cada archivo aplicado queda congelado por su checksum; nuevos cambios se incorporan en un archivo con número siguiente. Una reejecución correcta no duplica tablas ni catálogos.

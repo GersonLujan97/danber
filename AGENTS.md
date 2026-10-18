@@ -1,5 +1,9 @@
 # Instrucciones de trabajo — Danber
 
+**CHG-013 · 2026-10-17:** PR #1 integrado y copia local actualizada a main 583343b. Cuenta Maestro inicial por consola en `feat/cuenta-inicial`: contraseña sin eco, Argon2id, roles Maestro + Recepción y auditoría atómicos; migración 009. Implementado y verificado localmente; revisión de impacto pendiente. Tu cuenta real se crea después en tu terminal. Sesiones aún pendientes.
+
+Guía principal: [Cuenta Maestro inicial en Notion](https://app.notion.com/p/3fc2756ebb448101ba65e6e54e1532ca). Respaldo técnico: [crear cuenta](backend/CUENTA-INICIAL.md) y [ADR 0013](docs/decisiones/0013-cuenta-maestro-inicial.md).
+
 **CHG-012 · 2026-10-17:** backend y migrador admiten explícitamente CockroachDB 26.2.0 (instalación del usuario) y 26.2.7. Integración real del backend verificada en 26.2.0; pruebas SQL en informe actualizado. No se cambia el servidor ni los datos del usuario y las ocho migraciones conservan su contenido. Revisión de impacto pendiente; reiniciar API para cargar el ajuste.
 
 [Detalle de compatibilidad](docs/decisiones/0012-compatibilidad-cockroach-26-2-0.md).

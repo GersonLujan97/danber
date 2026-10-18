@@ -1,5 +1,7 @@
 # Backend inicial de Danber
 
+**Estado vigente · CHG-013:** cuenta Maestro inicial disponible por consola en `feat/cuenta-inicial`, verificada localmente en CockroachDB 26.2.0 y 26.2.7. Aplicar migración 009 antes de usarla. [Guía de creación en Notion](https://app.notion.com/p/3fc2756ebb448101ba65e6e54e1532ca) y [respaldo técnico](CUENTA-INICIAL.md). Inicio de sesión, recuperación y autorización por recurso siguen pendientes. El contenido CHG-011 inferior conserva el contexto del primer backend.
+
 CHG-011 · 2026-10-17. Primer incremento en feat/backend-inicial. Go **1.26.1**, net/http y pgx **5.11.0**. Solo comprobaciones operativas; aún no se exponen cuentas, pacientes ni reservas.
 
 Documentación principal: [Backend inicial en Notion](https://app.notion.com/p/3fc2756ebb4481068fb4eba26fb1228b).
@@ -14,14 +16,14 @@ Primero, con el administrador de tu nodo LOCAL, entra en SQL:
 .\cockroach sql --insecure --host=localhost:26257 --database=danber
 ```
 
-Antes de usar la API, aplica la nueva migración 008 desde la raíz del proyecto, usando la cuenta migradora:
+Antes de usar el backend, aplica las migraciones pendientes desde la raíz del proyecto, usando la cuenta migradora (009 es la última en CHG-013):
 
 ```powershell
 $env:DANBER_DATABASE_URL = 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
 python db/scripts/migrate.py apply --database danber
 ```
 
-La migración retira CREATE en public al rol público y conserva las siete versiones anteriores. Luego, en la consola SQL, ejecuta una vez:
+La migración 008 retira CREATE en public al rol público; 009 agrega el control de cuenta inicial. Las versiones anteriores conservan sus bytes. Luego, en la consola SQL, ejecuta una vez:
 
 ```sql
 CREATE USER IF NOT EXISTS danber_api;
@@ -79,7 +81,7 @@ backend/
 - config valida entorno y falla con mensajes que no imprimen secretos. Este incremento solo admite loopback para HTTP y SQL; TLS local explícito disable o verify-full, sin modos de fallback silencioso ni opciones que reescriban host/usuario/base.
 - database contiene el driver y un pool pequeño (máximo cuatro conexiones); no se exporta pgx a reglas de negocio.
 - health define únicamente las comprobaciones, con una función de conexión pequeña para poder probar fallos sin simular persistencia.
-- Identidad, Personal, Pacientes y Agenda se crearán cuando se implemente su capacidad; no hay carpetas ni repositorios genéricos vacíos. Las migraciones siguen en db/, sin duplicarlas en backend/migrations.
+- CHG-013 agrega Identidad y el comando crear-maestro con reglas y adaptadores privados del módulo. Personal, Pacientes y Agenda se crearán cuando se implemente su capacidad; no hay repositorios genéricos ni módulos vacíos. Las migraciones siguen en db/, sin duplicarlas en backend/migrations.
 
 ## Buenas prácticas aplicadas y por qué
 
@@ -124,7 +126,7 @@ El workflow .github/workflows/backend.yml comprueba formato, vet, tests con dete
 
 Rama feat/backend-inicial → comprobaciones → PR hacia main → revisión → integración por usuario. No se integra automáticamente. La adopción del flujo de ADR 0010 se confirma por la instrucción del usuario de continuar esa etapa; nuevas decisiones clínicas o de identificación permanecen pendientes.
 
-Próxima capacidad: aprovisionamiento controlado de cuenta Maestro y sesiones. Mantenerla como entrega separada. Sin rutas de negocio, credenciales por defecto, ORM, entidades compartidas ni algoritmos de reserva adelantados.
+CHG-013 incorpora aprovisionamiento controlado de cuenta Maestro como entrega separada. Próxima capacidad: inicio/cierre de sesión, expiración y revocación. Sin credenciales por defecto, ORM, entidades compartidas ni algoritmos de reserva adelantados.
 
 Fuentes: [net/http](https://pkg.go.dev/net/http), [pgxpool](https://pkg.go.dev/github.com/jackc/pgx/v5/pgxpool). Tener protocolo PostgreSQL no sustituye probar CockroachDB.
 
