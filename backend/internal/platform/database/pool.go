@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -51,6 +52,11 @@ func Open(ctx context.Context, connectionURL string) (*Pool, error) {
 
 func (p *Pool) Check(ctx context.Context) error { return p.pool.Ping(ctx) }
 func (p *Pool) Close()                          { p.pool.Close() }
+
+// BeginTx is consumed by SQL adapters, never by business rules.
+func (p *Pool) BeginTx(ctx context.Context, options pgx.TxOptions) (pgx.Tx, error) {
+	return p.pool.BeginTx(ctx, options)
+}
 
 func supportedVersion(version string) bool {
 	fields := strings.Fields(version)

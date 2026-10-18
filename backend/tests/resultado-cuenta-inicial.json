@@ -1,0 +1,76 @@
+{
+  "change": "CHG-013",
+  "date": "2026-10-17",
+  "go": "1.26.1",
+  "environment": "Windows; nodos locales aislados en memoria; datos ficticios",
+  "cockroachdb": {
+    "26.2.0": {
+      "command": "go test -tags=integration -count=1 ./...",
+      "identity_tests": [
+        {
+          "Test": "TestConcurrentInitialAccountIsAtomicAndRepeatSafe",
+          "Elapsed": 55.91
+        },
+        {
+          "Test": "TestExistingUsernameIsNotElevated",
+          "Elapsed": 56.7
+        },
+        {
+          "Test": "TestAuditFailureRollsBackEntireAccount",
+          "Elapsed": 59.2
+        },
+        {
+          "Test": "TestMissingMigrationAndUpgradeFromEight",
+          "Elapsed": 56.35
+        },
+        {
+          "Test": "TestExistingMasterWithoutMarkerIsRefused",
+          "Elapsed": 55.38
+        }
+      ],
+      "completed_at": "2026-10-17T19:05:23.446511-05:00",
+      "result": "pass"
+    },
+    "26.2.7": {
+      "command": "go test -tags=integration -count=1 ./internal/identidad",
+      "identity_tests": [
+        {
+          "Test": "TestConcurrentInitialAccountIsAtomicAndRepeatSafe",
+          "Elapsed": 46.47
+        },
+        {
+          "Test": "TestExistingUsernameIsNotElevated",
+          "Elapsed": 57.21
+        },
+        {
+          "Test": "TestAuditFailureRollsBackEntireAccount",
+          "Elapsed": 63.04
+        },
+        {
+          "Test": "TestMissingMigrationAndUpgradeFromEight",
+          "Elapsed": 57.4
+        },
+        {
+          "Test": "TestExistingMasterWithoutMarkerIsRefused",
+          "Elapsed": 57.2
+        }
+      ],
+      "completed_at": "2026-10-17T19:05:10.4160022-05:00",
+      "result": "pass"
+    }
+  },
+  "cli_interactive_26_2_0": "PASS: contraseña y confirmación sin eco; cuenta ficticia; dos roles; auditoría; formato Argon2id comprobado sin imprimir el hash",
+  "sql_suite_26_2_0": {
+    "checks": 38,
+    "report": "db/tests/resultado-verificacion.json"
+  },
+  "other_checks": [
+    "gofmt",
+    "go vet ./...",
+    "go build ./...",
+    "go mod verify",
+    "enlaces relativos",
+    "bytes/checksums 001–008 inalterados"
+  ],
+  "limits": "Integración SQL local; CI remota se registra por separado. No prueba login, sesiones, recuperación ni autorización por recurso. No crea la cuenta real del usuario."
+}
