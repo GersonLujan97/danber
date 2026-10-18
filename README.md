@@ -1,5 +1,7 @@
 # Danber — sistema de gestión odontológica
 
+**CHG-015 · 2026-10-18:** registro y búsqueda administrativa de pacientes implementados en `feat/registro-pacientes`; validación, permisos, apoderado, auditoría e idempotencia (011). Verificado localmente en CockroachDB 26.2.0 y 26.2.7; revisión de impacto pendiente. [Guía principal en Notion](https://app.notion.com/p/3fd2756ebb4481c79e62cc2616020ffb) y [respaldo técnico](backend/PACIENTES.md) y [ADR 0015](docs/decisiones/0015-registro-y-busqueda-pacientes.md). PR #3 de autenticación debe integrarse primero.
+
 **CHG-014 · 2026-10-18:** main actualizado a c0fb8ca (PR #2 integrado). El usuario informa creación correcta de su cuenta. Autenticación HTTP y seguridad por incremento implementadas y verificadas localmente en `feat/autenticacion`: sesiones, CSRF/origen, límites de solicitudes/CPU y revocación. Nueva migración 010; no volver a crear la cuenta. Revisión de impacto pendiente.
 
 [Acceso y seguridad en Notion](https://app.notion.com/p/3fd2756ebb4481cfa6ddc7e41e798fe9): ejecución, motivos, ataques de ejemplo, límites y controles previstos. Respaldo: [guía integrada](backend/AUTENTICACION-Y-SEGURIDAD.md) y [ADR 0014](docs/decisiones/0014-autenticacion-y-seguridad-incremental.md).

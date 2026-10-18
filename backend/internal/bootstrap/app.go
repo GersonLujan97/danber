@@ -11,6 +11,7 @@ import (
 
 	"github.com/GersonLujan97/danber/backend/internal/health"
 	"github.com/GersonLujan97/danber/backend/internal/identidad"
+	"github.com/GersonLujan97/danber/backend/internal/pacientes"
 	"github.com/GersonLujan97/danber/backend/internal/platform/config"
 	"github.com/GersonLujan97/danber/backend/internal/platform/database"
 	"github.com/GersonLujan97/danber/backend/internal/platform/httpsecurity"
@@ -41,6 +42,16 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	patients, err := pacientes.New(db)
+	if err != nil {
+		return err
+	}
+	patientSchemaCtx, cancelPatientSchema := context.WithTimeout(ctx, 5*time.Second)
+	err = patients.CheckSchema(patientSchemaCtx)
+	cancelPatientSchema()
+	if err != nil {
+		return err
+	}
 	listener, err := net.Listen("tcp", cfg.HTTPAddr)
 	if err != nil {
 		return errors.New("no se pudo abrir el puerto HTTP configurado")
@@ -53,6 +64,12 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 	mux := http.NewServeMux()
 	mux.Handle("/health/", health.Handler(db.Check))
 	mux.Handle("/auth/", auth)
+	patientHandler, err := patients.Handler(identity, identidad.HTTPOptions{Origin: "http://" + cfg.HTTPAddr, AllowInsecureLocal: cfg.AllowInsecureAuth, Logger: logger})
+	if err != nil {
+		return err
+	}
+	mux.Handle("/pacientes", patientHandler)
+	mux.Handle("/pacientes/", patientHandler)
 	server := &http.Server{
 		Handler:           httpsecurity.Headers(mux),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second,

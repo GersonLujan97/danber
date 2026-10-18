@@ -1,5 +1,7 @@
 # Backend inicial de Danber
 
+**CHG-015 · 2026-10-18:** alta/búsqueda administrativa de pacientes con documento, apoderado, permisos, auditoría e idempotencia. Nueva migración 011; conservar 001–010. Verificado localmente en CockroachDB 26.2.0 y 26.2.7; revisión de impacto pendiente. [Guía de pacientes](PACIENTES.md).
+
 **Estado vigente · CHG-014:** autenticación HTTP con sesiones, controles de abuso/CSRF y revocación en `feat/autenticacion`, verificada localmente en las dos versiones admitidas. [Guía en Notion](https://app.notion.com/p/3fd2756ebb4481cfa6ddc7e41e798fe9) y [respaldo técnico](AUTENTICACION-Y-SEGURIDAD.md). Aplicar 010 y activar explícitamente la excepción HTTP solo para probar en loopback. Usar la cuenta ya creada; no repetir crear-maestro. Los apartados históricos siguientes conservan el desarrollo por etapas.
 
 **Estado vigente · CHG-013:** cuenta Maestro inicial disponible por consola en `feat/cuenta-inicial`, verificada localmente en CockroachDB 26.2.0 y 26.2.7. Aplicar migración 009 antes de usarla. [Guía de creación en Notion](https://app.notion.com/p/3fc2756ebb448101ba65e6e54e1532ca) y [respaldo técnico](CUENTA-INICIAL.md). Inicio de sesión, recuperación y autorización por recurso siguen pendientes. El contenido CHG-011 inferior conserva el contexto del primer backend.
@@ -18,7 +20,7 @@ Primero, con el administrador de tu nodo LOCAL, entra en SQL:
 .\cockroach sql --insecure --host=localhost:26257 --database=danber
 ```
 
-Antes de usar el backend, aplica las migraciones pendientes desde la raíz del proyecto, usando la cuenta migradora (010 es la última en CHG-014):
+Antes de usar el backend, aplica las migraciones pendientes desde la raíz del proyecto, usando la cuenta migradora (011 es la última en CHG-015):
 
 ```powershell
 $env:DANBER_DATABASE_URL = 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'

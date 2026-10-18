@@ -53,3 +53,15 @@ func (a *Authentication) Authenticate(ctx context.Context, token string) (Princi
 	s, err := a.service.Current(ctx, token)
 	return s.Principal, err
 }
+
+// ProtectHTTP authenticates cookies and enforces origin, CSRF and request budgets.
+// It never grants a business permission on behalf of the consuming module.
+func (a *Authentication) ProtectHTTP(options HTTPOptions, next http.Handler) (http.Handler, error) {
+	h, err := transport.Protected(a.service, options, next)
+	if err != nil {
+		return nil, err
+	}
+	return httpsecurity.Headers(h), nil
+}
+
+func PrincipalFromContext(ctx context.Context) (Principal, bool) { return transport.Principal(ctx) }

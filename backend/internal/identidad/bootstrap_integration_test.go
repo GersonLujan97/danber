@@ -57,7 +57,7 @@ func fixture(t *testing.T, through int) (context.Context, *pgx.Conn, *database.P
 	t.Cleanup(func() { admin.Close(context.Background()) })
 	_, source, _, _ := runtime.Caller(0)
 	files, err := filepath.Glob(filepath.Join(filepath.Dir(source), "../../../db/migrations/[0-9][0-9][0-9]_*.sql"))
-	if err != nil || len(files) != 10 {
+	if err != nil || len(files) != 11 {
 		t.Fatal("missing migrations")
 	}
 	for i, path := range files {
