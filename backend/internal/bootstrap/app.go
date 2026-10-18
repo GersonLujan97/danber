@@ -10,8 +10,10 @@ import (
 	"time"
 
 	"github.com/GersonLujan97/danber/backend/internal/health"
+	"github.com/GersonLujan97/danber/backend/internal/identidad"
 	"github.com/GersonLujan97/danber/backend/internal/platform/config"
 	"github.com/GersonLujan97/danber/backend/internal/platform/database"
+	"github.com/GersonLujan97/danber/backend/internal/platform/httpsecurity"
 )
 
 func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
@@ -22,12 +24,37 @@ func Run(ctx context.Context, cfg config.Config, logger *slog.Logger) error {
 		return err
 	}
 	defer db.Close()
+	// Defaults also cover direct composition in integration tests.
+	if cfg.SessionIdle == 0 {
+		cfg.SessionIdle = 15 * time.Minute
+	}
+	if cfg.SessionTTL == 0 {
+		cfg.SessionTTL = 8 * time.Hour
+	}
+	identity, err := identidad.NewAuthentication(db, identidad.SessionPolicy{Idle: cfg.SessionIdle, Absolute: cfg.SessionTTL})
+	if err != nil {
+		return err
+	}
+	schemaCtx, cancelSchema := context.WithTimeout(ctx, 5*time.Second)
+	err = identity.CheckSchema(schemaCtx)
+	cancelSchema()
+	if err != nil {
+		return err
+	}
 	listener, err := net.Listen("tcp", cfg.HTTPAddr)
 	if err != nil {
 		return errors.New("no se pudo abrir el puerto HTTP configurado")
 	}
+	defer listener.Close()
+	auth, err := identity.Handler(identidad.HTTPOptions{Origin: "http://" + cfg.HTTPAddr, AllowInsecureLocal: cfg.AllowInsecureAuth, Logger: logger})
+	if err != nil {
+		return err
+	}
+	mux := http.NewServeMux()
+	mux.Handle("/health/", health.Handler(db.Check))
+	mux.Handle("/auth/", auth)
 	server := &http.Server{
-		Handler:           health.Handler(db.Check),
+		Handler:           httpsecurity.Headers(mux),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second,
 		WriteTimeout: 10 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10,
 		ErrorLog: slog.NewLogLogger(logger.Handler(), slog.LevelError),

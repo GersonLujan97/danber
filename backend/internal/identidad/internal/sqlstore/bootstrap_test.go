@@ -79,3 +79,21 @@ func TestUnknownCommitOutcomeIsNotReplayed(t *testing.T) {
 		t.Fatal("uncertain commit must not be retried automatically")
 	}
 }
+
+func TestAuthTransactionsBoundRetriesAndDoNotReplayUnknownCommit(t *testing.T) {
+	for _, tt := range []struct {
+		code string
+		want int
+	}{{"40001", 5}, {"08006", 1}} {
+		db := &failingDB{err: &pgconn.PgError{Code: tt.code, Message: "PRIVATE_SQL_DETAIL"}}
+		err := (Store{DB: db}).authTx(context.Background(), func(pgx.Tx) error { return nil })
+		if !errors.Is(err, app.ErrUnavailable) || db.calls != tt.want {
+			t.Fatal("unsafe authentication transaction retry")
+		}
+	}
+	db := &uncertainDB{}
+	err := (Store{DB: db}).authTx(context.Background(), func(pgx.Tx) error { return nil })
+	if !errors.Is(err, app.ErrUnavailable) || db.calls != 1 {
+		t.Fatal("uncertain authentication COMMIT replayed")
+	}
+}

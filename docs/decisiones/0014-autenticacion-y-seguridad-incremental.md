@@ -1,0 +1,30 @@
+# ADR 0014 — autenticación y seguridad por incremento
+
+Fecha: 2026-10-18. CHG-014. Autor/origen: Isai autoriza la siguiente etapa y solicita prever seguridad, rate limit y documentación con motivos/casos; Codex concreta la implementación técnica. Estado: **Implementado y verificado localmente**. Revisión de impacto: **Pendiente de revisión**. Rama feat/autenticacion, desde main c0fb8ca (PR #2 integrado). El usuario informa que creó su cuenta inicial; no se consulta su contraseña ni se repite el aprovisionamiento.
+
+## Antes y después
+
+Antes: cuenta inicial con Argon2id, sin login HTTP ni sesiones utilizables. Después: login, consulta de sesión, cierre individual y cierre de todas las sesiones propias. Cookies opacas, expiración absoluta/inactividad, revocación/versiones y auditoría en SQL; JSON/origen/CSRF, límites de solicitudes y CPU, respuestas genéricas y permisos actuales. La seguridad acompaña cada capacidad; el despliegue y los controles pendientes se explican en la [guía integrada](../../backend/AUTENTICACION-Y-SEGURIDAD.md).
+
+## Decisiones y alternativas
+
+- Sesiones opacas del servidor con 32 bytes aleatorios; hash SHA-256 en SQL, cookie HttpOnly/SameSite=Strict y Secure sobre TLS. La rotación al autenticar la misma cuenta revoca la cookie previa presentada. Alternativa JWT: añade gestión de revocación/claims desactualizados sin necesidad actual; no se introduce. No usar localStorage para un bearer del navegador.
+- Valor inicial de inactividad 15m y absoluto 8h, configurables y pendientes de revisión operativa. La autoridad temporal es SQL. Alternativa depender del vencimiento del cliente permitiría conservar acceso con una cookie copiada.
+- GET /auth/session recarga permisos desde el catálogo; el cliente no asigna roles. Identidad expone un contrato mínimo de autenticación y capacidades; la autorización por recurso se implementará en los casos de uso futuros. No se confunde autenticación con acceso clínico ilimitado.
+- Rate limit en memoria acotada para el único proceso local: IP real 10/min y global 60/min para login; nombre normalizado 5/min; sesión/cierres 120/IP/min y 600 global/min. Dos verificaciones Argon2id simultáneas. Valores técnicos iniciales versionados, sin suspensión permanente automática. Ventanas fijas y máximo 4096 claves por limitador. Alternativa Redis/distribuido: se pospone hasta necesitar varias instancias; antes de escalarlas debe cambiarse este control. Reinicio del proceso reinicia contadores.
+- No confiar Forwarded/X-Forwarded-For. Host/origen exactos, Fetch Metadata y protección estándar Go, JSON estricto y cabecera de cliente en POST; token CSRF HMAC ligado a la cookie para cierres. La cabecera constante no reemplaza CSRF ni autenticación. No habilitar CORS general. Un origen compartido simplifica la futura interfaz.
+- HTTPS obligatorio por defecto en el adaptador; la API actual sigue siendo local HTTP y requiere DANBER_ALLOW_INSECURE_AUTH=true para pruebas. Esa excepción comprueba loopback real. La implementación no habilita despliegue remoto ni sustituye TLS SQL. La cookie es Secure con TLS; no afirmar que el modo local tiene esa protección de transporte.
+- Mismo 401 para usuario ausente, contraseña incorrecta y suspensión; hash ficticio para reducir diferencias de costo. No se promete igualdad temporal perfecta. Verificación PHC permite solo la política Argon2id conocida para impedir parámetros de memoria/CPU arbitrarios desde una credencial dañada.
+- SQL parametrizado, cinco reintentos de toda transacción solo ante 40001; ningún reintento automático de COMMIT incierto. Apertura/cierre/revocación y auditoría atómicos; cierre repetido no duplica auditoría. Fallos anónimos generan evento genérico, sin actor de aplicación inventado ni secretos.
+
+## Datos, contrato e impacto
+
+Nueva 010 añade ultimo_uso_en, usuario_version e índice de sesiones activas. No modifica 001–009; instalaciones existentes aplican migraciones. El arranque comprueba las columnas requeridas con el usuario de ejecución, sin migrar ni leer metadata administrativa. SQL inicial regenerado solo para bases nuevas. No se añaden permisos SQL ni nuevos roles de aplicación.
+
+Contratos: OpenAPI incorpora cuatro rutas, cookies/CSRF, límites y errores. Código: módulo Identidad (aplicación, SQL, hash, transporte), composición/configuración y cabeceras API. Pruebas: unitarias y CockroachDB real aislado. Documentación: portada, capítulos 02–05/07 y guías de backend/base/seguridad; README/AGENTS. Glosario conserva cuenta/persona/odontólogo/rol; se explican sesión, autenticación, autorización y rate limit sin redefinir conceptos clínicos.
+
+## Revisión y siguientes pasos
+
+**Pendiente de revisión:** valores temporales y presupuestos frente a operación real, exposición por red, proxy/TLS, política completa de contraseña, MFA/recuperación, permisos por recurso, frontend/XSS/CSP, copias/restauración, retención/monitoreo/incidentes y validación normativa. Cada siguiente capacidad debe aportar evidencia de controles pertinentes; no se espera al final para diseñarlos. Responsable/fecha/evidencia del cierre se registrarán cuando se revise, no por pasar tests.
+
+Verificado con Go 1.26.1: pruebas unitarias, vet de fuentes normales/integración, compilación y módulos. Backend completo en CockroachDB 26.2.0; diez escenarios HTTP/SQL de autenticación también correctos en 26.2.7. Actualización 009→010 con datos existentes preserva cuenta, credencial y sesión. Suite SQL 26.2.0: 38 comprobaciones correctas. Ejemplo PowerShell contra cmd/api real con datos ficticios: login/session/logout. OpenAPI YAML y referencias, enlaces y bytes/checksums 001–009 revisados. [Informe de autenticación](../../backend/tests/resultado-autenticacion.json). CI remota se registra en la entrega del PR; no sustituye la integración SQL local. Próximo incremento propuesto: alta y búsqueda de pacientes con autenticación y autorización por operación/recurso; completar antes los contratos operativos necesarios. Este ADR complementa 0011–0013 y concreta parte de la propuesta de seguridad; no aprueba los pendientes clínicos ni borra la historia previa.

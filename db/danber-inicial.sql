@@ -470,4 +470,16 @@ GRANT SELECT, UPDATE ON TABLE identidad.aprovisionamiento_inicial TO danber_runt
 
 UPDATE danber_meta.migracion SET estado='aplicada', aplicada_en=now() WHERE version=9 AND estado='aplicando';
 
+-- 010_sesiones_y_version_acceso.sql
+
+INSERT INTO danber_meta.migracion(version,nombre,sha256,estado) VALUES (10,'010_sesiones_y_version_acceso.sql','21499c1e86a55f8f56cc0191506f645fbee6291576b5a198dd074cc8c4720abd','aplicando');
+
+-- Existing sessions gain server-side inactivity and account-version checks.
+ALTER TABLE identidad.sesion ADD COLUMN ultimo_uso_en TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE identidad.sesion ADD COLUMN usuario_version INT8 NOT NULL DEFAULT 1 CHECK (usuario_version > 0);
+CREATE INDEX sesion_usuario_activa ON identidad.sesion (usuario_id) WHERE revocado_en IS NULL;
+
+
+UPDATE danber_meta.migracion SET estado='aplicada', aplicada_en=now() WHERE version=10 AND estado='aplicando';
+
 SELECT version,nombre,sha256,estado FROM danber_meta.migracion ORDER BY version;
